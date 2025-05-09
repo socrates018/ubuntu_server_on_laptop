@@ -34,26 +34,21 @@ set_tlp_config() {
         echo "$key=$value" | sudo tee -a "$CONFIG_FILE" > /dev/null
     fi
 }
+#!/bin/bash
 
-# Prompt user for threshold with default value and validation
-while true; do
-    read -rp "Enter the stop charge threshold [1-100] (default: 80): " stop_thresh
-    stop_thresh=${stop_thresh:-80}  # Use 80 if empty
-    
-    # Validate input is a number between 1-100
-    if [[ "$stop_thresh" =~ ^[0-9]+$ ]] && [ "$stop_thresh" -ge 1 ] && [ "$stop_thresh" -le 100 ]; then
-        break
-    else
-        echo "Error: '${stop_thresh}' is not a valid percentage (1-100). Using default 80."
-        stop_thresh=80
-        break
-    fi
-done
+# Get thresholds with defaults
+read -rp "Enter START charge threshold (default 75): " start_thresh
+read -rp "Enter STOP charge threshold (default 80): " stop_thresh
 
-echo "Setting battery charge thresholds..."
-set_tlp_config START_CHARGE_THRESH_BAT0 75
+# Apply defaults if empty
+start_thresh=${start_thresh:-75}
+stop_thresh=${stop_thresh:-80}
+
+# Set the thresholds
+echo "Setting thresholds - Start: ${start_thresh}% Stop: ${stop_thresh}%"
+set_tlp_config START_CHARGE_THRESH_BAT0 "$start_thresh"
 set_tlp_config STOP_CHARGE_THRESH_BAT0 "$stop_thresh"
-set_tlp_config START_CHARGE_THRESH_BAT1 75
+set_tlp_config START_CHARGE_THRESH_BAT1 "$start_thresh"
 set_tlp_config STOP_CHARGE_THRESH_BAT1 "$stop_thresh"
 
 # Restart TLP to apply config changes
