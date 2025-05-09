@@ -2,9 +2,14 @@
 
 # Script to install TLP and set battery charge threshold to 80%
 
-echo "Installing TLP..."
-sudo apt update
-sudo apt install -y tlp
+# Check if TLP is installed
+if ! command -v tlp &> /dev/null
+then
+    echo "TLP could not be found"
+    echo "Installing TLP..."
+    sudo apt update
+    sudo apt install -y tlp
+fi
 
 # Enable and start TLP service
 echo "Enabling TLP..."
@@ -30,12 +35,26 @@ set_tlp_config() {
     fi
 }
 
-# Set thresholds to 80% for supported hardware (e.g., ThinkPads)
+# Prompt user for threshold with default value and validation
+while true; do
+    read -rp "Enter the stop charge threshold [1-100] (default: 80): " stop_thresh
+    stop_thresh=${stop_thresh:-80}  # Use 80 if empty
+    
+    # Validate input is a number between 1-100
+    if [[ "$stop_thresh" =~ ^[0-9]+$ ]] && [ "$stop_thresh" -ge 1 ] && [ "$stop_thresh" -le 100 ]; then
+        break
+    else
+        echo "Error: '${stop_thresh}' is not a valid percentage (1-100). Using default 80."
+        stop_thresh=80
+        break
+    fi
+done
+
 echo "Setting battery charge thresholds..."
 set_tlp_config START_CHARGE_THRESH_BAT0 75
-set_tlp_config STOP_CHARGE_THRESH_BAT0 80
+set_tlp_config STOP_CHARGE_THRESH_BAT0 "$stop_thresh"
 set_tlp_config START_CHARGE_THRESH_BAT1 75
-set_tlp_config STOP_CHARGE_THRESH_BAT1 80
+set_tlp_config STOP_CHARGE_THRESH_BAT1 "$stop_thresh"
 
 # Restart TLP to apply config changes
 echo "Restarting TLP service..."
