@@ -15,4 +15,7 @@ fi
 update-grub > /dev/null 2>&1
 
 # Immediate blank (wakes on keypress)
-setterm --blank 1 --powersave on --powerdown 1
+# We redirect to /dev/tty1 because this script is likely run via SSH
+# and we want to affect the physical console.
+setterm --blank 1 --powersave on --powerdown 1 > /dev/tty1 2>/dev/null || true
+setterm --blank force > /dev/tty1 2>/dev/null || true
