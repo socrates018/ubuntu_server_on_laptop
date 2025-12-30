@@ -1,40 +1,47 @@
 #!/bin/bash
+set -euo pipefail
 
-# Script to install TLP and set battery charge threshold to 80%
+# Script to install TLP and set battery charge threshold
+
+# Check for root privileges
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root (sudo)."
+  exit 1
+fi
 
 # Check if TLP is installed
-if ! command -v tlp &> /dev/null
-then
-    echo "TLP could not be found"
+if ! command -v tlp &> /dev/null; then
     echo "Installing TLP..."
-    sudo apt update
-    sudo apt install -y tlp
+    apt-get update && apt-get install -y tlp
 fi
 
 # Enable and start TLP service
 echo "Enabling TLP..."
-sudo systemctl enable tlp
-sudo systemctl start tlp
+systemctl enable tlp
+systemctl start tlp
 
 # Modify TLP config
 CONFIG_FILE="/etc/tlp.conf"
 BACKUP_FILE="/etc/tlp.conf.bak"
 
 # Backup original config
-echo "Backing up original TLP config..."
-sudo cp "$CONFIG_FILE" "$BACKUP_FILE"
+if [ ! -f "$BACKUP_FILE" ]; then
+    echo "Backing up original TLP config..."
+    cp "$CONFIG_FILE" "$BACKUP_FILE"
+else
+    echo "Backup already exists at $BACKUP_FILE"
+fi
 
 # Function to set or replace config lines
 set_tlp_config() {
     local key="$1"
     local value="$2"
     if grep -qE "^\s*#?\s*$key=" "$CONFIG_FILE"; then
-        sudo sed -i "s|^\s*#\?\s*$key=.*|$key=$value|" "$CONFIG_FILE"
+        sed -i "s|^\s*#\?\s*$key=.*|$key=$value|" "$CONFIG_FILE"
     else
-        echo "$key=$value" | sudo tee -a "$CONFIG_FILE" > /dev/null
+        echo "$key=$value" | tee -a "$CONFIG_FILE" > /dev/null
     fi
 }
-#!/bin/bash
 
 # Get thresholds with defaults
 read -rp "Enter START charge threshold (default 75): " start_thresh
@@ -53,20 +60,20 @@ set_tlp_config STOP_CHARGE_THRESH_BAT1 "$stop_thresh"
 
 # Restart TLP to apply config changes
 echo "Restarting TLP service..."
-sudo systemctl restart tlp
+systemctl restart tlp
 
 # Show status and battery threshold info
 echo ""
 echo "----------------------------------------"
 echo "TLP Service Status:"
 echo "----------------------------------------"
-sudo systemctl status tlp --no-pager
+systemctl status tlp --no-pager
 
 echo ""
 echo "----------------------------------------"
 echo "TLP Battery Charge Thresholds:"
 echo "----------------------------------------"
-sudo tlp-stat -b | grep -i 'charge'
+tlp-stat -b | grep -i 'charge'
 
 echo ""
-echo "TLP setup complete. Threshold set to 80% (if supported)."
+echo "TLP setup complete."

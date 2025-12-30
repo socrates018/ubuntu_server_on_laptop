@@ -1,10 +1,17 @@
 #!/bin/bash
+set -u
+
+# Auto-install miniupnpc if missing
+if ! command -v upnpc &> /dev/null; then
+    echo "upnpc not found. Installing miniupnpc..."
+    sudo apt-get update && sudo apt-get install -y miniupnpc
+fi
 
 echo "==========================="
 echo "📡 Current UPnP Mappings:"
 echo "==========================="
 
-# Extract the External IP address from upnpc output
+# Extract the External IP address
 external_ip=$(upnpc -l | grep "ExternalIPAddress" | awk -F" = " '{print $2}')
 
 if [[ -z "$external_ip" ]]; then
@@ -12,7 +19,7 @@ if [[ -z "$external_ip" ]]; then
     exit 1
 fi
 
-# ——— CHANGED: prefix public IP and protocol before each mapping ———
+# List mappings
 upnpc -l | awk -v ip="$external_ip" '/^ *[0-9]+ / {
     split($3, a, "->")
     print $2, ip ":" a[1], "->", a[2]
@@ -21,7 +28,7 @@ upnpc -l | awk -v ip="$external_ip" '/^ *[0-9]+ / {
 echo
 echo "🚧 Attempting to delete UPnP mappings..."
 
-# Clean up mappings list (excluding headers and empty lines)
+# Get list of mappings to delete
 map_list=$(upnpc -l | awk '/^ *[0-9]+ / {split($3, a, "->"); print $2, a[1]}')
 
 if [[ -z "$map_list" ]]; then
@@ -44,7 +51,7 @@ echo "==========================="
 echo "📋 UPnP Mappings After Cleanup:"
 echo "==========================="
 
-# ——— CHANGED: again prefix public IP and protocol before each remaining mapping ———
+# List mappings again
 upnpc -l | awk -v ip="$external_ip" '/^ *[0-9]+ / {
     split($3, a, "->")
     print $2, ip ":" a[1], "->", a[2]

@@ -1,3 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+# Check dependencies
+if ! command -v xorriso &> /dev/null || ! command -v 7z &> /dev/null; then
+    echo "Installing dependencies (xorriso, p7zip-full)..."
+    sudo apt-get update && sudo apt-get install -y xorriso p7zip-full
+fi
+
+# Check if the generator script exists
+if [ ! -f "./ubuntu-autoinstall-generator.sh" ]; then
+    echo "Error: ./ubuntu-autoinstall-generator.sh not found."
+    exit 1
+fi
+
+echo "Starting Ubuntu auto-install generation..."
+
 sudo SKIP_VERIFY=true ./ubuntu-autoinstall-generator.sh \
   -k \
   -a \
@@ -5,4 +22,6 @@ sudo SKIP_VERIFY=true ./ubuntu-autoinstall-generator.sh \
   -m ~/autoinstall-config/meta-data \
   -s /mnt/d/socra/Downloads/ubuntu-24.04.3-live-server-amd64.iso \
   -d /mnt/d/socra/Downloads/ubuntu-auto.iso
+
+echo "Done."
   

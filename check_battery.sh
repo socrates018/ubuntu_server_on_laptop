@@ -1,13 +1,13 @@
 #!/bin/bash
+set -euo pipefail
 
-# Check if TLP is installed
-if ! command -v tlp &> /dev/null
-then
-    echo "TLP could not be found. Please install it first."
-    exit 1
+# Auto-install TLP if missing
+if ! command -v tlp &> /dev/null; then
+    echo "TLP not found. Installing..."
+    sudo apt-get update && sudo apt-get install -y tlp
 fi
 
 # Show battery status using tlp
-echo "Battery status:"
-sudo tlp-stat -b | grep -E "Battery|Charge"
+echo "Checking battery status..."
+sudo tlp-stat -b | grep -E "Battery|Charge" || echo "No battery information found."
 
