@@ -3,18 +3,12 @@ set -u
 
 # Auto-install miniupnpc if missing
 if ! command -v upnpc &> /dev/null; then
-    echo "upnpc not found. Installing miniupnpc..."
-    sudo apt-get update && sudo apt-get install -y miniupnpc
+    sudo apt-get update -qq && sudo apt-get install -y -qq miniupnpc > /dev/null
 fi
-
-echo "==========================="
-echo "📡 Current UPnP Mappings:"
-echo "==========================="
 
 # Extract the External IP address
 external_ip=$(upnpc -l | grep "ExternalIPAddress" | awk -F" = " '{print $2}')
 if [[ -z "$external_ip" ]]; then
-    echo "❌ Could not retrieve External IP address."
     exit 1
 fi
 

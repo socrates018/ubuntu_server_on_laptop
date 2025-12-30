@@ -11,14 +11,12 @@ fi
 
 # Check if TLP is installed
 if ! command -v tlp &> /dev/null; then
-    echo "Installing TLP..."
-    apt-get update && apt-get install -y tlp
+    apt-get update -qq && apt-get install -y -qq tlp > /dev/null
 fi
 
 # Enable and start TLP service
-echo "Enabling TLP..."
-systemctl enable tlp
-systemctl start tlp
+systemctl enable tlp > /dev/null 2>&1
+systemctl start tlp > /dev/null 2>&1
 
 # Modify TLP config
 CONFIG_FILE="/etc/tlp.conf"
@@ -26,10 +24,7 @@ BACKUP_FILE="/etc/tlp.conf.bak"
 
 # Backup original config
 if [ ! -f "$BACKUP_FILE" ]; then
-    echo "Backing up original TLP config..."
     cp "$CONFIG_FILE" "$BACKUP_FILE"
-else
-    echo "Backup already exists at $BACKUP_FILE"
 fi
 
 # Function to set or replace config lines
@@ -52,28 +47,14 @@ start_thresh=${start_thresh:-75}
 stop_thresh=${stop_thresh:-80}
 
 # Set the thresholds
-echo "Setting thresholds - Start: ${start_thresh}% Stop: ${stop_thresh}%"
 set_tlp_config START_CHARGE_THRESH_BAT0 "$start_thresh"
 set_tlp_config STOP_CHARGE_THRESH_BAT0 "$stop_thresh"
 set_tlp_config START_CHARGE_THRESH_BAT1 "$start_thresh"
 set_tlp_config STOP_CHARGE_THRESH_BAT1 "$stop_thresh"
 
 # Restart TLP to apply config changes
-echo "Restarting TLP service..."
 systemctl restart tlp
 
 # Show status and battery threshold info
-echo ""
-echo "----------------------------------------"
-echo "TLP Service Status:"
-echo "----------------------------------------"
 systemctl status tlp --no-pager
-
-echo ""
-echo "----------------------------------------"
-echo "TLP Battery Charge Thresholds:"
-echo "----------------------------------------"
 tlp-stat -b | grep -i 'charge'
-
-echo ""
-echo "TLP setup complete."

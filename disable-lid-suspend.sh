@@ -12,10 +12,7 @@ BACKUP_FILE="/etc/systemd/logind.conf.bak"
 
 # Backup the original config file
 if [ ! -f "$BACKUP_FILE" ]; then
-    echo "Backing up $CONFIG_FILE to $BACKUP_FILE..."
     cp "$CONFIG_FILE" "$BACKUP_FILE"
-else
-    echo "Backup already exists at $BACKUP_FILE"
 fi
 
 # Function to update or append a config line
@@ -31,13 +28,9 @@ set_config_value() {
 }
 
 # Set desired values
-echo "Updating logind.conf settings..."
 set_config_value HandleLidSwitch ignore
 set_config_value HandleLidSwitchDocked ignore
 set_config_value LidSwitchIgnoreInhibited no
 
 # Restart systemd-logind to apply changes
-echo "Restarting systemd-logind service..."
 systemctl restart systemd-logind
-
-echo "Lid close behavior set to ignore. LidSwitchIgnoreInhibited=no applied."
