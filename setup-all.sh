@@ -7,6 +7,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 chmod +x *.sh
 
+echo "Installing packages..."
+./install-packages.sh
+
 echo "Disabling lid suspend..."
 ./disable-lid-suspend.sh
 
