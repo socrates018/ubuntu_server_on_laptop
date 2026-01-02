@@ -24,5 +24,6 @@ echo "Installing auto-shutdown on low battery..."
 
 echo "Enabling automatic security updates..."
 ./enable-auto-upgrades.sh
+./enable-llmnr.sh
 
 echo "✓ Setup complete"
