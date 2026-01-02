@@ -1,2 +1,2 @@
 # ubuntu_server_on_laptop
-Some scripts for Ubuntu server to run on a laptop
+The scripts can be used to setup an old laptop with Ubuntu Server. The names are self-explanatory.
