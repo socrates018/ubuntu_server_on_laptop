@@ -16,3 +16,9 @@ chmod +x wireguard-install.sh
 # Run (headless by default)
 export HEADLESS_INSTALL=y
 ./wireguard-install.sh
+
+# Enable firewall access for WireGuard
+# Note: The installer may configure its own firewall rules
+if systemctl is-active --quiet ufw; then
+    ufw allow 51820/udp comment 'WireGuard VPN'
+fi
